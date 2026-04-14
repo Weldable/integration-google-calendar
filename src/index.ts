@@ -1,4 +1,4 @@
-import { defineIntegration, createRestHandler } from '@weldable/integration-core'
+import { defineIntegration, createRestHandler, fakeId, fakeArray, fakeIsoTimestamp, fakeUrl, deriveSeed } from '@weldable/integration-core'
 
 const rest = createRestHandler()
 
@@ -158,6 +158,16 @@ export default defineIntegration({
           pageToken: 'query',
         },
       }),
+      mockExecute: async (_args, ctx) => ({
+        items: fakeArray(ctx.seed, 3, (s) => ({
+          id: fakeId(s, 16),
+          summary: `Mock Event ${s.slice(-4)}`,
+          start: { dateTime: fakeIsoTimestamp(s) },
+          end: { dateTime: fakeIsoTimestamp(deriveSeed(s, 'end')) },
+          htmlLink: fakeUrl(s),
+        })),
+        nextPageToken: undefined,
+      }),
     },
     {
       actionId: 'search_events',
@@ -237,6 +247,16 @@ export default defineIntegration({
           orderBy: 'query',
         },
       }),
+      mockExecute: async (_args, ctx) => ({
+        items: fakeArray(ctx.seed, 2, (s) => ({
+          id: fakeId(s, 16),
+          summary: `Mock Search Result ${s.slice(-4)}`,
+          start: { dateTime: fakeIsoTimestamp(s) },
+          end: { dateTime: fakeIsoTimestamp(deriveSeed(s, 'end')) },
+          htmlLink: fakeUrl(s),
+        })),
+        nextPageToken: undefined,
+      }),
     },
     {
       actionId: 'get_event',
@@ -276,6 +296,14 @@ export default defineIntegration({
         method: 'GET',
         path: '/calendars/{calendarId}/events/{eventId}',
         paramMapping: { calendarId: 'path', eventId: 'path' },
+      }),
+      mockExecute: async (args, ctx) => ({
+        id: fakeId(ctx.seed, 16),
+        summary: 'Mock Event',
+        start: { dateTime: fakeIsoTimestamp(ctx.seed) },
+        end: { dateTime: fakeIsoTimestamp(deriveSeed(ctx.seed, 'end')) },
+        htmlLink: fakeUrl(ctx.seed),
+        attendees: [],
       }),
     },
     {
@@ -379,6 +407,14 @@ export default defineIntegration({
           reminders: 'body',
           colorId: 'body',
         },
+      }),
+      mockExecute: async (args, ctx) => ({
+        id: fakeId(ctx.seed, 16),
+        summary: String(args.summary ?? 'Mock Event'),
+        start: { dateTime: fakeIsoTimestamp(ctx.seed) },
+        end: { dateTime: fakeIsoTimestamp(deriveSeed(ctx.seed, 'end')) },
+        htmlLink: fakeUrl(ctx.seed),
+        created: fakeIsoTimestamp(ctx.seed),
       }),
     },
     {
@@ -605,6 +641,9 @@ export default defineIntegration({
         method: 'POST',
         path: '/freeBusy',
         paramMapping: { timeMin: 'body', timeMax: 'body', items: 'body', timeZone: 'body' },
+      }),
+      mockExecute: async (_args, _ctx) => ({
+        calendars: { primary: { busy: [] } },
       }),
     },
   ],
