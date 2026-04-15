@@ -17,8 +17,30 @@ npm install @weldable/integration-google-calendar @weldable/integration-core
 ```ts
 import integration from '@weldable/integration-google-calendar'
 
-// Pass to a Weldable-compatible host
-console.log(integration.actions.map(a => a.id))
+// List upcoming events
+const list = integration.actions.find(a => a.id === 'google_calendar.list_events')!
+
+const events = await list.execute(
+  {
+    calendarId: 'primary',
+    timeMin: new Date().toISOString(),
+    maxResults: 5,
+  },
+  ctx, // ActionContext from your Weldable-compatible host
+)
+
+// Create an event
+const create = integration.actions.find(a => a.id === 'google_calendar.create_event')!
+
+await create.execute(
+  {
+    calendarId: 'primary',
+    summary: 'Sprint planning',
+    start: { dateTime: '2025-02-03T10:00:00-08:00' },
+    end: { dateTime: '2025-02-03T11:00:00-08:00' },
+  },
+  ctx,
+)
 ```
 
 ## Contributing and releasing
